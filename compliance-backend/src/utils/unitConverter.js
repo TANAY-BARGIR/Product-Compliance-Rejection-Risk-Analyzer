@@ -1,27 +1,19 @@
-/**
- * Normalizes any concentration value to Percentage (%).
- * * Rules:
- * - 1 ppm = 0.0001%
- * - 1 mg/kg = 0.0001% (Same as ppm)
- * - 1 % = 1 %
- * * @param {number} value - The numerical amount
- * @param {string} unit - The unit (ppm, %, mg/kg)
- * @returns {number} - The value converted to %
- */
+const SUPPORTED_UNITS = ["%", "percent", "percentage", "ppm", "mg/kg"];
+
 function normalizeToPercent(value, unit) {
   const cleanUnit = unit.toLowerCase().trim();
 
-  if (cleanUnit === '%' || cleanUnit === 'percent' || cleanUnit === 'percentage') {
+  if (cleanUnit === "%" || cleanUnit === "percent" || cleanUnit === "percentage") {
     return parseFloat(value);
   }
 
-  if (cleanUnit === 'ppm' || cleanUnit === 'mg/kg') {
-    // Conversion: ppm / 10000 = %
+  if (cleanUnit === "ppm" || cleanUnit === "mg/kg") {
     return parseFloat(value) / 10000;
   }
 
-  // Fallback (Assumes % if unit is weird, but ideally validation catches this)
-  return parseFloat(value);
+  throw new Error(
+    `Unsupported unit: "${unit}". Supported units: ${SUPPORTED_UNITS.join(", ")}`
+  );
 }
 
-module.exports = { normalizeToPercent };
+module.exports = { normalizeToPercent, SUPPORTED_UNITS };
