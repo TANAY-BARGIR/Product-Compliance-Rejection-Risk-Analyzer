@@ -1,0 +1,57 @@
+{
+  "category": "Cookies & Biscuits",
+  "standard": "FSSAI 2.11.10",
+  "version": "1.0",
+  "rules": [
+    {
+      "id": "CK001",
+      "name": "Trans Fat Limit",
+      "target_code": "PARAM-TRANSFAT",
+      "type": "MAX_LIMIT",
+      "limit": 2.0,
+      "unit": "%",
+      "severity": "CRITICAL",
+      "description": "Trans fat must not exceed 2% of total fat content."
+    },
+    {
+      "id": "CK002",
+      "name": "Aflatoxin B1 Limit",
+      "target_code": "CAS-1162-65-8",
+      "type": "MAX_LIMIT",
+      "limit": 1.0,
+      "unit": "ppm",
+      "severity": "CRITICAL",
+      "description": "Aflatoxin B1 is a potent carcinogen; max 1 ppm."
+    },
+    {
+      "id": "CK003",
+      "name": "Melamine Ban",
+      "target_code": "CAS-108-78-1",
+      "type": "BANNED",
+      "limit": 0,
+      "unit": "%",
+      "severity": "CRITICAL",
+      "description": "Melamine is banned in food products."
+    },
+    {
+      "id": "CK004",
+      "name": "Moisture Content",
+      "target_code": "PARAM-MOISTURE",
+      "type": "MAX_LIMIT",
+      "limit": 6.0,
+      "unit": "%",
+      "severity": "WARNING",
+      "description": "Moisture must not exceed 6% for shelf stability."
+    },
+    {
+      "id": "CK005",
+      "name": "Acid Insoluble Ash",
+      "target_code": "PARAM-ASH",
+      "type": "MAX_LIMIT",
+      "limit": 0.1,
+      "unit": "%",
+      "severity": "WARNING",
+      "description": "Acid insoluble ash must not exceed 0.1%."
+    }
+  ]
+}

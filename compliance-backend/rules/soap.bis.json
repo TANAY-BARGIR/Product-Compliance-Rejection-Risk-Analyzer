@@ -52,6 +52,56 @@
       "unit": "ppm",
       "severity": "CRITICAL",
       "description": "Sum of Lead and Arsenic must not exceed 20ppm."
+    },
+    {
+      "id": "R006",
+      "name": "Moisture Content",
+      "target_code": "PARAM-MOISTURE",
+      "type": "MAX_LIMIT",
+      "limit": 15.0,
+      "unit": "%",
+      "severity": "WARNING",
+      "description": "Moisture content must not exceed 15% for Grade 1 soap."
+    },
+    {
+      "id": "R007",
+      "name": "Total Chloride (as NaCl)",
+      "target_code": "CAS-7647-14-5",
+      "type": "MAX_LIMIT",
+      "limit": 1.0,
+      "unit": "%",
+      "severity": "WARNING",
+      "description": "Excess chloride degrades soap quality and lather."
+    },
+    {
+      "id": "R008",
+      "name": "Formaldehyde Ban",
+      "target_code": "CAS-50-00-0",
+      "type": "BANNED",
+      "limit": 0,
+      "unit": "%",
+      "severity": "CRITICAL",
+      "description": "Formaldehyde is a known carcinogen and is banned in soap."
+    },
+    {
+      "id": "R009",
+      "name": "EDTA Chelating Agent Limit",
+      "target_code": "CAS-60-00-4",
+      "type": "MAX_LIMIT",
+      "limit": 0.1,
+      "unit": "%",
+      "severity": "WARNING",
+      "description": "EDTA must not exceed 0.1% due to environmental concerns."
+    },
+    {
+      "id": "R010",
+      "name": "Rosin Content",
+      "target_code": "CAS-8050-09-7",
+      "type": "MAX_LIMIT",
+      "limit": 25.0,
+      "unit": "%",
+      "severity": "WARNING",
+      "description": "Rosin content allowed up to 25% as per BIS standards."
     }
   ]
 }
