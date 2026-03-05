@@ -1,8 +1,5 @@
 const { submissionSchema } = require("../utils/validationSchema");
-const { resolveIngredient } = require("../services/normalizationService");
-const { normalizeToPercent } = require("../utils/unitConverter");
-const { evaluateCompliance } = require("../services/ruleEngine");
-const { generateExplanation } = require("../services/aiService");
+const CompliancePipeline = require("../services/compliancePipeline");
 const { generatePDFReport } = require("../services/reportService");
 const db = require("../config/db");
 
@@ -11,41 +8,12 @@ async function evaluateProduct(req, res) {
     const validatedData = submissionSchema.parse(req.body);
     console.log(`\n📦 Processing Product: ${validatedData.productName}`);
 
-    const { normalizedIngredients, unknownIngredients } =
-      await processIngredients(validatedData.ingredients);
-
-    const complianceResult = evaluateCompliance(
-      normalizedIngredients,
-      unknownIngredients,
-      validatedData.category
-    );
-
-    let aiSummary = "Product is fully compliant. No further action required.";
-    if (complianceResult.status !== "COMPLIANT") {
-      console.log("🤖 Generating AI Explanation...");
-      aiSummary = await generateExplanation(complianceResult);
-    }
-
-    const responseData = {
-      product: validatedData.productName,
-      category: validatedData.category,
-      normalization_summary: {
-        resolved_count: normalizedIngredients.length,
-        unknown_count: unknownIngredients.length,
-        unknown_list: unknownIngredients,
-      },
-      compliance_report: {
-        ...complianceResult,
-        ai_explanation: aiSummary,
-      },
-    };
-
-    await persistEvaluation(validatedData, complianceResult, aiSummary);
+    const result = await CompliancePipeline.run(validatedData);
 
     res.json({
       status: "success",
       message: "Evaluation completed",
-      data: responseData,
+      data: result,
     });
   } catch (error) {
     handleError(res, error);
@@ -57,28 +25,13 @@ async function getProductReport(req, res) {
     const validatedData = submissionSchema.parse(req.body);
     console.log(`\n📄 Generating PDF for: ${validatedData.productName}`);
 
-    const { normalizedIngredients, unknownIngredients } =
-      await processIngredients(validatedData.ingredients);
-
-    const complianceResult = evaluateCompliance(
-      normalizedIngredients,
-      unknownIngredients,
-      validatedData.category
-    );
-
-    let aiSummary = "Product is fully compliant.";
-    if (complianceResult.status !== "COMPLIANT") {
-      aiSummary = await generateExplanation(complianceResult);
-    }
-    complianceResult.ai_explanation = aiSummary;
+    const result = await CompliancePipeline.run(validatedData);
 
     const reportData = {
-      product: validatedData.productName,
-      category: validatedData.category,
-      compliance_report: complianceResult,
+      product: result.product,
+      category: result.category,
+      compliance_report: result.compliance_report,
     };
-
-    await persistEvaluation(validatedData, complianceResult, aiSummary);
 
     const doc = generatePDFReport(reportData);
 
@@ -97,10 +50,11 @@ async function getProductReport(req, res) {
 async function getEvaluationHistory(req, res) {
   try {
     const result = await db.query(
-      `SELECT id, product_name, category, status, risk_score, risk_level, 
-              total_violations, created_at 
-       FROM evaluations 
-       ORDER BY created_at DESC 
+      `SELECT id, product_name, category, status, risk_score, risk_level,
+              total_violations, total_borderlines, missing_data_count,
+              pipeline_version, created_at
+       FROM evaluations
+       ORDER BY created_at DESC
        LIMIT 50`
     );
     res.json({ status: "success", data: result.rows });
@@ -109,64 +63,51 @@ async function getEvaluationHistory(req, res) {
   }
 }
 
-async function persistEvaluation(validatedData, complianceResult, aiSummary) {
+async function getEvaluationDetail(req, res) {
   try {
+    const { id } = req.params;
+
+    // Fetch evaluation
     const evalResult = await db.query(
-      `INSERT INTO evaluations 
-        (product_name, category, status, risk_score, risk_level, total_violations, total_borderlines, missing_data_count, ai_explanation) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
-       RETURNING id`,
-      [
-        validatedData.productName,
-        validatedData.category,
-        complianceResult.status,
-        complianceResult.risk_score,
-        complianceResult.risk_level,
-        complianceResult.total_violations,
-        complianceResult.total_borderlines || 0,
-        complianceResult.missing_data_count,
-        aiSummary,
-      ]
+      `SELECT id, product_name, category, status, risk_score, risk_level,
+              total_violations, total_borderlines, missing_data_count,
+              pipeline_version, ai_explanation, created_at
+       FROM evaluations WHERE id = $1`,
+      [id]
     );
 
-    const evalId = evalResult.rows[0].id;
-
-    for (const v of complianceResult.violations) {
-      await db.query(
-        `INSERT INTO violations 
-          (evaluation_id, rule_id, rule_name, severity, description, limit_readable, actual_percent) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [evalId, v.rule_id, v.rule_name, v.severity, v.description, v.limit_readable, v.actual_percent]
-      );
+    if (evalResult.rows.length === 0) {
+      return res.status(404).json({ status: "error", message: "Evaluation not found" });
     }
 
-    console.log(`💾 Evaluation persisted with ID: ${evalId}`);
+    // Fetch rule outcomes
+    const outcomesResult = await db.query(
+      `SELECT test_module, rule_id, rule_name, rule_type, target_code,
+              outcome, severity, limit_value, actual_value, deviation_pct, reasoning
+       FROM rule_outcomes WHERE evaluation_id = $1
+       ORDER BY id`,
+      [id]
+    );
+
+    // Fetch pipeline stages
+    const stagesResult = await db.query(
+      `SELECT stage_name, stage_order, status, duration_ms, details
+       FROM evaluation_stages WHERE evaluation_id = $1
+       ORDER BY stage_order`,
+      [id]
+    );
+
+    res.json({
+      status: "success",
+      data: {
+        evaluation: evalResult.rows[0],
+        rule_outcomes: outcomesResult.rows,
+        stages: stagesResult.rows,
+      },
+    });
   } catch (error) {
-    console.error("⚠️ Failed to persist evaluation:", error.message);
+    handleError(res, error);
   }
-}
-
-async function processIngredients(ingredients) {
-  const normalizedIngredients = [];
-  const unknownIngredients = [];
-
-  for (const item of ingredients) {
-    const substance = await resolveIngredient(item.name);
-
-    if (substance) {
-      const percentValue = normalizeToPercent(item.concentration, item.unit);
-      normalizedIngredients.push({
-        input_name: item.name,
-        substance_id: substance.reference_code,
-        official_name: substance.official_name,
-        type: substance.type,
-        value_percent: percentValue,
-      });
-    } else {
-      unknownIngredients.push(item.name);
-    }
-  }
-  return { normalizedIngredients, unknownIngredients };
 }
 
 function handleError(res, error) {
@@ -177,4 +118,4 @@ function handleError(res, error) {
   res.status(500).json({ status: "error", message: error.message || "Internal Server Error" });
 }
 
-module.exports = { evaluateProduct, getProductReport, getEvaluationHistory };
+module.exports = { evaluateProduct, getProductReport, getEvaluationHistory, getEvaluationDetail };

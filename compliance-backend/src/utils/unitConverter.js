@@ -1,4 +1,4 @@
-const SUPPORTED_UNITS = ["%", "percent", "percentage", "ppm", "mg/kg"];
+const SUPPORTED_UNITS = ["%", "percent", "percentage", "ppm", "mg/kg", "ppb", "mg/l", "µg/kg", "ug/kg"];
 
 function normalizeToPercent(value, unit) {
   const cleanUnit = unit.toLowerCase().trim();
@@ -8,6 +8,14 @@ function normalizeToPercent(value, unit) {
   }
 
   if (cleanUnit === "ppm" || cleanUnit === "mg/kg") {
+    return parseFloat(value) / 10000;
+  }
+
+  if (cleanUnit === "ppb" || cleanUnit === "µg/kg" || cleanUnit === "ug/kg") {
+    return parseFloat(value) / 10000000;
+  }
+
+  if (cleanUnit === "mg/l") {
     return parseFloat(value) / 10000;
   }
 

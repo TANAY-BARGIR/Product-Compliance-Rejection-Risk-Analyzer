@@ -4,8 +4,8 @@ const { getAvailableCategories } = require("../services/ruleEngine");
 const ingredientSchema = z.object({
   name: z.string().min(1, "Ingredient name is required"),
   concentration: z.number().min(0, "Concentration must be positive"),
-  unit: z.enum(["%", "ppm", "mg/kg"], {
-    errorMap: () => ({ message: "Unit must be %, ppm, or mg/kg" }),
+  unit: z.enum(["%", "ppm", "mg/kg", "ppb", "mg/L", "µg/kg", "ug/kg"], {
+    errorMap: () => ({ message: "Unit must be %, ppm, mg/kg, ppb, mg/L, or µg/kg" }),
   }),
 });
 
@@ -13,6 +13,7 @@ const submissionSchema = z
   .object({
     productName: z.string().min(1, "Product name is required"),
     category: z.string().min(1, "Category is required"),
+    manufacturer: z.string().optional(),
     ingredients: z
       .array(ingredientSchema)
       .min(1, "Must provide at least one ingredient"),
