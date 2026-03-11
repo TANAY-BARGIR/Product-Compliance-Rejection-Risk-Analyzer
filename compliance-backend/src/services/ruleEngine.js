@@ -16,7 +16,7 @@ const RISK_POINTS = {
   INTERACTION_WARNING:  10,
   INTERACTION_INFO:     5,
   BORDERLINE:      5,
-  UNKNOWN:         8,
+  UNKNOWN:         3,   // Reduced from 8 — unknown ≠ toxic; flat heavy penalty was unrealistic
   DENSITY_PENALTY: 15,
 };
 

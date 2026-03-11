@@ -226,6 +226,7 @@ async function runExplanation(context) {
   if (context.status !== "COMPLIANT") {
     console.log("🤖 Generating AI Explanation...");
     const complianceReport = {
+      product: context.productName,
       status: context.status,
       standard: context.standard,
       violations: context.violations,

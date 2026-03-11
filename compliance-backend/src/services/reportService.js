@@ -106,7 +106,7 @@ function generatePDFReport(data) {
 
   // --- 5. VIOLATIONS TABLE ---
   // We need to calculate where the table starts dynamically based on text length
-  const summaryHeight = doc.heightOfString(cleanSummary, { width: 495 });
+  const summaryHeight = doc.heightOfString(cleanSummary, { width: 495, lineGap: 4 });
   let tableTop = summaryTop + 35 + summaryHeight + 20;
 
   if (report.violations.length > 0) {
@@ -116,7 +116,7 @@ function generatePDFReport(data) {
     doc.text("REGULATION RULE", 60, tableTop + 6);
     doc.text("LIMIT", 260, tableTop + 6);
     doc.text("ACTUAL", 340, tableTop + 6);
-    doc.text("SEVERITY", 430, tableTop + 6);
+    doc.text("SEVERITY", 425, tableTop + 6);
 
     // Table Rows
     let y = tableTop + 25;
@@ -135,12 +135,12 @@ function generatePDFReport(data) {
 
       const badgeColor =
         v.severity === "CRITICAL" ? COLOR_DANGER : COLOR_WARNING;
-      doc.roundedRect(425, y - 2, 70, 12, 6).fill(badgeColor);
+      doc.roundedRect(420, y - 3, 80, 15, 6).fill(badgeColor);
       doc
         .fillColor("white")
         .fontSize(8)
         .font("Helvetica-Bold")
-        .text(v.severity, 425, y, { width: 70, align: "center" });
+        .text(v.severity, 420, y+1, { width: 80, align: "center", lineBreak: false });
 
       y += 25;
 

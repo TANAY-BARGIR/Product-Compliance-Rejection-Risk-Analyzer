@@ -19,8 +19,8 @@ describe("Test Modules", () => {
       ]);
       const results = IngredientLimitTest.run(map, soapRules);
 
-      // Should only contain MIN_LIMIT and MAX_LIMIT rules (7 of 10 soap rules)
-      expect(results.length).toBe(7);
+      // Should only contain MIN_LIMIT and MAX_LIMIT rules (8 of 12 soap rules)
+      expect(results.length).toBe(8);
       results.forEach((r) => {
         expect(r.test_module).toBe("IngredientLimitTest");
         expect(["MIN_LIMIT", "MAX_LIMIT"]).toContain(r.rule_type);
@@ -29,7 +29,7 @@ describe("Test Modules", () => {
     });
 
     test("detects FAIL when exceeding MAX_LIMIT", () => {
-      const map = new Map([["CAS-1310-73-2", 0.1]]); // NaOH limit is 0.05%
+      const map = new Map([["CAS-1310-73-2", 0.15]]); // NaOH limit is 0.1%, 0.15% is >10% deviation so FAIL
       const results = IngredientLimitTest.run(map, soapRules);
       const naohResult = results.find((r) => r.target_code === "CAS-1310-73-2");
       expect(naohResult.outcome).toBe("FAIL");
@@ -48,8 +48,8 @@ describe("Test Modules", () => {
       const map = new Map();
       const results = IngredientBanTest.run(map, soapRules);
 
-      // 2 BANNED rules in soap: Mercury and Formaldehyde
-      expect(results.length).toBe(2);
+      // 1 BANNED rule in soap: Mercury (Formaldehyde is now MAX_LIMIT)
+      expect(results.length).toBe(1);
       results.forEach((r) => {
         expect(r.test_module).toBe("IngredientBanTest");
         expect(r.rule_type).toBe("BANNED");
@@ -81,8 +81,8 @@ describe("Test Modules", () => {
       ]);
       const results = IngredientGroupLimitTest.run(map, soapRules);
 
-      // 1 GROUP_MAX rule in soap: Heavy Metals
-      expect(results.length).toBe(1);
+      // 3 GROUP_MAX rules in soap: Heavy Metals, Total Fragrance, Total Colorant
+      expect(results.length).toBe(3);
       expect(results[0].test_module).toBe("IngredientGroupLimitTest");
       expect(results[0].rule_type).toBe("GROUP_MAX");
     });
@@ -114,7 +114,7 @@ describe("Test Modules", () => {
       const group = IngredientGroupLimitTest.run(map, soapRules);
 
       const totalCovered = limit.length + ban.length + group.length;
-      expect(totalCovered).toBe(10); // 7 limit + 2 banned + 1 group
+      expect(totalCovered).toBe(12); // 7 limit + 2 banned + 3 groups (heavy metals, fragrance, colorant)
     });
 
     test("each outcome has all required fields", () => {

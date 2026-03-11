@@ -1,11 +1,11 @@
 const db = require("../../config/db");
 
 /**
- * LabelingComplianceTest — Checks that required parameters for the category
+ * LabelingComplianceTest — Checks that expected substances for the category
  * are declared in the formulation.
  *
- * For example, a soap product MUST declare TFM and Moisture Content.
- * Missing required parameters get a NO_DATA outcome.
+ * For example, a lotion product expects Water, Glycerin, etc.
+ * Missing expected substances get a NO_DATA outcome.
  */
 async function run(ingredientMap, _rules, category) {
   // Query for required parameters in this category
@@ -13,7 +13,7 @@ async function run(ingredientMap, _rules, category) {
     SELECT s.reference_code, s.official_name
     FROM substance_categories sc
     JOIN substances s ON sc.substance_id = s.id
-    WHERE sc.category = $1 AND s.type = 'parameter'
+    WHERE sc.category = $1
   `;
   const result = await db.query(query, [category]);
   const outcomes = [];
@@ -32,7 +32,7 @@ async function run(ingredientMap, _rules, category) {
         limit_value: null,
         actual_value: actualValue,
         deviation_pct: null,
-        reasoning: `Required parameter ${row.official_name} is declared in the formulation`,
+        reasoning: `Expected substance ${row.official_name} is declared in the formulation`,
       });
     } else {
       outcomes.push({
@@ -46,7 +46,7 @@ async function run(ingredientMap, _rules, category) {
         limit_value: null,
         actual_value: null,
         deviation_pct: null,
-        reasoning: `Required parameter ${row.official_name} is NOT declared — labeling may be incomplete`,
+        reasoning: `Expected substance ${row.official_name} is NOT declared — formulation may be incomplete`,
       });
     }
   }
