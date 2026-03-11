@@ -1,107 +1,129 @@
 {
-  "category": "Toilet Soap",
+  "category": "Soap",
   "standard": "BIS IS 2888:2004",
-  "version": "1.0",
+  "version": "2.1",
+  "authority": "Bureau of Indian Standards",
+  "description": "BIS Standard for Toilet Soap — IS 2888:2004 including EU Cosmetics Regulation group limits for fragrance and colorants.",
   "rules": [
     {
-      "id": "R001",
-      "name": "Total Fatty Matter (Grade 1)",
+      "id": "SP001",
+      "name": "TFM (Total Fatty Matter)",
       "target_code": "PARAM-TFM",
       "type": "MIN_LIMIT",
-      "limit": 76.0,
+      "limit": 76,
       "unit": "%",
       "severity": "CRITICAL",
-      "description": "Grade 1 soap must have at least 76% TFM."
+      "description": "Total Fatty Matter must be ≥76% for Grade 1 toilet soap (BIS IS 2888:2004, Cl. 3.1)."
     },
     {
-      "id": "R002",
-      "name": "Free Alkali (as NaOH)",
+      "id": "SP002",
+      "name": "Moisture Content",
+      "target_code": "PARAM-MOISTURE",
+      "type": "MAX_LIMIT",
+      "limit": 15,
+      "unit": "%",
+      "severity": "WARNING",
+      "description": "Moisture must not exceed 15% to prevent microbial growth and maintain bar hardness."
+    },
+    {
+      "id": "SP003",
+      "name": "Free Alkali (NaOH equivalent)",
       "target_code": "CAS-1310-73-2",
       "type": "MAX_LIMIT",
       "limit": 0.05,
       "unit": "%",
-      "severity": "WARNING",
-      "description": "Excess alkali can cause skin irritation."
-    },
-    {
-      "id": "R003",
-      "name": "Triclosan Restriction",
-      "target_code": "CAS-3380-34-5",
-      "type": "MAX_LIMIT",
-      "limit": 0.3,
-      "unit": "%",
       "severity": "CRITICAL",
-      "description": "Restricted due to potential endocrine disruption."
+      "description": "Free alkali (as NaOH) must not exceed 0.05% — excess alkali causes skin irritation (BIS IS 2888:2004, Cl. 3.3)."
     },
     {
-      "id": "R004",
+      "id": "SP004",
       "name": "Mercury Ban",
       "target_code": "CAS-7439-97-6",
       "type": "BANNED",
       "limit": 0,
       "unit": "%",
       "severity": "CRITICAL",
-      "description": "Mercury is toxic and strictly banned in cosmetics."
+      "description": "Mercury and mercury compounds are strictly banned in cosmetics and soap under BIS, EU, and FSSAI regulations."
     },
     {
-      "id": "R005",
-      "name": "Heavy Metals (Group Limit)",
-      "type": "GROUP_MAX",
-      "targets": ["CAS-7439-92-1", "CAS-7440-38-2"],
-      "limit": 20.0,
+      "id": "SP005",
+      "name": "Lead Limit",
+      "target_code": "CAS-7439-92-1",
+      "type": "MAX_LIMIT",
+      "limit": 20,
       "unit": "ppm",
       "severity": "CRITICAL",
-      "description": "Sum of Lead and Arsenic must not exceed 20ppm."
+      "description": "Lead (Pb) must not exceed 20 ppm in cosmetics — EU Regulation 1223/2009 Annex II, permissible trace level."
     },
     {
-      "id": "R006",
-      "name": "Moisture Content",
-      "target_code": "PARAM-MOISTURE",
+      "id": "SP006",
+      "name": "Arsenic Limit",
+      "target_code": "CAS-7440-38-2",
       "type": "MAX_LIMIT",
-      "limit": 15.0,
-      "unit": "%",
-      "severity": "WARNING",
-      "description": "Moisture content must not exceed 15% for Grade 1 soap."
+      "limit": 2,
+      "unit": "ppm",
+      "severity": "CRITICAL",
+      "description": "Arsenic (As) trace limit in soap — maximum 2 ppm (2 mg/kg) as per BIS heavy metals guidance."
     },
     {
-      "id": "R007",
-      "name": "Total Chloride (as NaCl)",
-      "target_code": "CAS-7647-14-5",
+      "id": "SP007",
+      "name": "Triclosan Limit",
+      "target_code": "CAS-3380-34-5",
+      "type": "MAX_LIMIT",
+      "limit": 0.3,
+      "unit": "%",
+      "severity": "CRITICAL",
+      "description": "Triclosan (antibacterial) must not exceed 0.3% in cosmetics — EU Cosmetics Regulation 1223/2009."
+    },
+    {
+      "id": "SP008",
+      "name": "Formaldehyde Ban",
+      "target_code": "CAS-50-00-0",
+      "type": "MAX_LIMIT",
+      "limit": 0.1,
+      "unit": "%",
+      "severity": "CRITICAL",
+      "description": "Free Formaldehyde in wash-off cosmetics must not exceed 0.1% (1000 ppm) — EU Cosmetics Reg Annex V."
+    },
+    {
+      "id": "SP009",
+      "name": "Rosin Limit",
+      "target_code": "CAS-8050-09-7",
       "type": "MAX_LIMIT",
       "limit": 1.0,
       "unit": "%",
       "severity": "WARNING",
-      "description": "Excess chloride degrades soap quality and lather."
+      "description": "Rosin (colophony) is a sensitizer — should not exceed 1% in soap formulations to minimize contact allergy risk."
     },
     {
-      "id": "R008",
-      "name": "Formaldehyde Ban",
-      "target_code": "CAS-50-00-0",
-      "type": "BANNED",
-      "limit": 0,
-      "unit": "%",
+      "id": "SP010",
+      "name": "Heavy Metals Cumulative Limit",
+      "type": "GROUP_MAX",
+      "targets": ["CAS-7439-92-1", "CAS-7440-38-2"],
+      "limit": 22,
+      "unit": "ppm",
       "severity": "CRITICAL",
-      "description": "Formaldehyde is a known carcinogen and is banned in soap."
+      "description": "Cumulative sum of Lead + Arsenic must not exceed 22 ppm — combined heavy metal burden limit."
     },
     {
-      "id": "R009",
-      "name": "EDTA Chelating Agent Limit",
-      "target_code": "CAS-60-00-4",
-      "type": "MAX_LIMIT",
-      "limit": 0.1,
+      "id": "SP011",
+      "name": "Total Fragrance Limit",
+      "type": "GROUP_MAX",
+      "targets": ["FRAG-MIXTURE", "CAS-78-70-6", "CAS-5989-27-5"],
+      "limit": 1.0,
       "unit": "%",
       "severity": "WARNING",
-      "description": "EDTA must not exceed 0.1% due to environmental concerns."
+      "description": "Total fragrance compounds in rinse-off cosmetics must not exceed 1% — EU Cosmetics Regulation 1223/2009 and IFRA guidelines."
     },
     {
-      "id": "R010",
-      "name": "Rosin Content",
-      "target_code": "CAS-8050-09-7",
-      "type": "MAX_LIMIT",
-      "limit": 25.0,
+      "id": "SP012",
+      "name": "Total Colorant Limit",
+      "type": "GROUP_MAX",
+      "targets": ["COLOR-GENERIC", "CAS-1309-37-1", "CAS-13463-67-7"],
+      "limit": 0.5,
       "unit": "%",
-      "severity": "WARNING",
-      "description": "Rosin content allowed up to 25% as per BIS standards."
+      "severity": "INFO",
+      "description": "Combined colorant content (dyes, pigments, oxides) must not exceed 0.5% for a visually acceptable and regulatory-safe product."
     }
   ]
 }

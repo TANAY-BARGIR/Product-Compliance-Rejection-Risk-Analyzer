@@ -14,10 +14,27 @@ DROP TABLE IF EXISTS ingredient_groups  CASCADE;
 DROP TABLE IF EXISTS ingredient_limits  CASCADE;
 DROP TABLE IF EXISTS regulations        CASCADE;
 DROP TABLE IF EXISTS product_ingredients CASCADE;
+DROP TABLE IF EXISTS users              CASCADE;
 DROP TABLE IF EXISTS products           CASCADE;
 DROP TABLE IF EXISTS substance_categories CASCADE;
 DROP TABLE IF EXISTS substance_aliases  CASCADE;
 DROP TABLE IF EXISTS substances         CASCADE;
+
+
+-- =========================
+-- 0. USERS
+-- =========================
+-- User accounts for authentication.
+
+CREATE TABLE users (
+  id              SERIAL PRIMARY KEY,
+  name            VARCHAR(200) NOT NULL,
+  email           VARCHAR(200) UNIQUE NOT NULL,
+  password_hash   VARCHAR(64)  NOT NULL,
+  created_at      TIMESTAMP    DEFAULT NOW()
+);
+
+CREATE INDEX idx_users_email ON users(email);
 
 
 -- =========================
