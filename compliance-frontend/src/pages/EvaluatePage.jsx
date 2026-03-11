@@ -1,19 +1,22 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import IngredientRow from '../components/IngredientRow';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { evaluateProduct } from '../api';
-import './EvaluatePage.css';
 
-const EMPTY_INGREDIENT = { name: '', concentration: 0, unit: '%' };
+const EMPTY_INGREDIENT = { name: '', concentration: "", unit: '%' };
 
 const CATEGORIES = [
   { value: 'soap', label: 'Toilet Soap (BIS IS 2888:2004)' },
   { value: 'cookies', label: 'Cookies & Biscuits (FSSAI 2.11.10)' },
+  { value: 'talcum', label: 'Talcum Powder (BIS IS 1462:2019)' },
+  { value: 'hairoil', label: 'Hair Oil (BIS IS 7123:2019)' },
+  { value: 'lotion', label: 'Moisturizing Cream/Lotion (BIS IS 6608:2004)' },
+  { value: 'perfume', label: 'Body Spray / Deodorant (BIS IS 8482:2007)' },
 ];
 
-function EvaluatePage({ onResult }) {
+function EvaluatePage({ user, onLogout, onResult }) {
   const navigate = useNavigate();
   const [productName, setProductName] = useState('');
+  const [manufacturer, setManufacturer] = useState('');
   const [category, setCategory] = useState('soap');
   const [ingredients, setIngredients] = useState([{ ...EMPTY_INGREDIENT }]);
   const [loading, setLoading] = useState(false);
@@ -27,9 +30,9 @@ function EvaluatePage({ onResult }) {
     setIngredients(ingredients.filter((_, i) => i !== index));
   };
 
-  const updateIngredient = (index, updated) => {
+  const updateIngredient = (index, field, value) => {
     const next = [...ingredients];
-    next[index] = updated;
+    next[index][field] = value;
     setIngredients(next);
   };
 
@@ -37,7 +40,6 @@ function EvaluatePage({ onResult }) {
     e.preventDefault();
     setError('');
 
-    // Basic client-side validation
     if (!productName.trim()) {
       setError('Product name is required');
       return;
@@ -52,6 +54,7 @@ function EvaluatePage({ onResult }) {
     const requestData = {
       productName: productName.trim(),
       category,
+      manufacturer: manufacturer.trim() || undefined,
       ingredients: validIngredients.map((i) => ({
         name: i.name.trim(),
         concentration: Number(i.concentration),
@@ -73,133 +76,178 @@ function EvaluatePage({ onResult }) {
   };
 
   return (
-    <div className="page-container">
-      {/* Hero section */}
-      <div className="evaluate-hero animate-fade-in">
-        <div className="hero-icon">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-            <rect x="9" y="3" width="6" height="4" rx="1" />
-            <path d="M9 14l2 2 4-4" />
-          </svg>
-        </div>
-        <div>
-          <h1>Evaluate Product Compliance</h1>
-          <p>Submit a product formulation to check regulatory compliance and assess rejection risk.</p>
+    <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+      <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+        <div className="layout-container flex h-full grow flex-col">
+          {/* Navigation Header */}
+          <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-primary/10 bg-white dark:bg-slate-900 px-6 md:px-20 py-4 z-10 sticky top-0">
+            <Link to="/" className="flex items-center gap-3">
+              <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+                <span className="material-symbols-outlined">shield_with_heart</span>
+              </div>
+              <h2 className="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight tracking-tight">ComplianceIQ</h2>
+            </Link>
+            <div className="flex items-center gap-6">
+                <Link to="/history" className="text-sm font-semibold hover:text-primary transition-colors">History</Link>
+              {user && (
+                <div className="flex items-center gap-4 border-l border-slate-200 dark:border-slate-800 pl-6">
+                   <div className="hidden sm:block text-right">
+                       <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{user.name?.split(' ')[0]}</p>
+                   </div>
+                   <button onClick={onLogout} className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors" title="Log Out">
+                     <span className="material-symbols-outlined">logout</span>
+                   </button>
+                </div>
+              )}
+            </div>
+          </header>
+          
+          <main className="flex flex-1 justify-center py-8 px-4 md:px-0">
+            <div className="layout-content-container flex flex-col max-w-[960px] flex-1">
+              {/* Page Hero/Header */}
+              <div className="flex flex-wrap justify-between gap-3 mb-8">
+                <div className="flex min-w-72 flex-col gap-2">
+                  <h1 className="text-slate-900 dark:text-slate-100 text-4xl font-extrabold leading-tight tracking-tight">New Evaluation</h1>
+                  <p className="text-primary font-medium text-lg">Check safety compliance for your formulations</p>
+                </div>
+              </div>
+
+              {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                  {error}
+                </div>
+              )}
+
+              {/* Evaluation Form Card */}
+              <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-primary/10 p-6 md:p-8">
+                
+                {/* Product Metadata addition to UI */}
+                <div className="mb-8 p-4 bg-background-light dark:bg-slate-800/50 rounded-xl border border-transparent">
+                  <h3 className="font-bold text-lg mb-4 text-slate-800 dark:text-slate-100">Product Info</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Product Name</label>
+                        <input className="w-full h-12 px-4 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" 
+                            type="text" placeholder="e.g. Premium Bath Soap" value={productName} onChange={(e)=>setProductName(e.target.value)} />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Category</label>
+                        <select className="w-full h-12 px-4 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" 
+                            value={category} onChange={(e)=>setCategory(e.target.value)}>
+                            {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Manufacturer (Optional)</label>
+                        <input className="w-full h-12 px-4 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" 
+                            type="text" placeholder="e.g. Acme Corp" value={manufacturer} onChange={(e)=>setManufacturer(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-slate-900 dark:text-slate-100 text-2xl font-bold tracking-tight">Ingredients List</h2>
+                  <span className="text-sm font-medium text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">{ingredients.length} Active Rules</span>
+                </div>
+
+                {/* Ingredients Builder */}
+                <div className="space-y-4">
+                  {/* Header Row Labels (Hidden on mobile) */}
+                  <div className="hidden md:flex gap-4 px-2 text-sm font-semibold text-slate-500 uppercase tracking-wider">
+                    <div className="flex-[3]">Ingredient Name</div>
+                    <div className="flex-[1]">Concentration</div>
+                    <div className="flex-[1]">Unit</div>
+                    <div className="w-10"></div>
+                  </div>
+
+                  {ingredients.map((ing, i) => (
+                      <div key={i} className="flex flex-col md:flex-row gap-4 p-4 bg-background-light dark:bg-slate-800/50 rounded-xl border border-transparent hover:border-primary/30 transition-all group">
+                        <div className="flex-[3]">
+                          <label className="block md:hidden text-xs font-bold text-slate-500 mb-1 uppercase">Ingredient Name</label>
+                          <input className="w-full h-12 px-4 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" 
+                            placeholder="e.g. Salicylic Acid" type="text" value={ing.name} onChange={(e) => updateIngredient(i, 'name', e.target.value)} />
+                        </div>
+                        <div className="flex-[1]">
+                          <label className="block md:hidden text-xs font-bold text-slate-500 mb-1 uppercase">Concentration</label>
+                          <input className="w-full h-12 px-4 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" 
+                            placeholder="0.00" type="number" step="any" value={ing.concentration} onChange={(e) => updateIngredient(i, 'concentration', e.target.value)} />
+                        </div>
+                        <div className="flex-[1]">
+                          <label className="block md:hidden text-xs font-bold text-slate-500 mb-1 uppercase">Unit</label>
+                          <select className="w-full h-12 px-4 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                             value={ing.unit} onChange={(e) => updateIngredient(i, 'unit', e.target.value)}>
+                            <option value="%">%</option>
+                            <option value="mg/kg">mg/kg</option>
+                            <option value="ppm">ppm</option>
+                          </select>
+                        </div>
+                        <div className="flex items-end md:items-center justify-end w-full md:w-10">
+                          {ingredients.length > 1 && (
+                            <button type="button" onClick={() => removeIngredient(i)} className="text-slate-400 hover:text-red-500 transition-colors p-2">
+                              <span className="material-symbols-outlined">delete</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                  ))}
+
+                  {/* Add Ingredient Button */}
+                  <button type="button" onClick={addIngredient} className="w-full py-4 mt-2 border-2 border-dashed border-primary/30 rounded-xl flex items-center justify-center gap-2 text-primary font-bold hover:bg-primary/5 hover:border-primary transition-all">
+                    <span className="material-symbols-outlined">add_circle</span>
+                    Add Ingredient
+                  </button>
+                </div>
+
+                {/* Footer Actions */}
+                <div className="mt-12 flex flex-col md:flex-row items-center justify-between gap-6 pt-8 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-3 text-slate-500">
+                    <span className="material-symbols-outlined text-primary">info</span>
+                    <p className="text-sm">Evaluating against BIS and FSSAI rules</p>
+                  </div>
+                  <div className="flex gap-4 w-full md:w-auto">
+                    <button type="button" className="flex-1 md:flex-none px-8 py-4 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent">
+                      Save Draft
+                    </button>
+                    <button type="button" onClick={handleSubmit} disabled={loading} className="flex-1 md:flex-none px-10 py-4 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2 glow-primary hover:brightness-110 active:scale-[0.98] transition-all">
+                      {loading ? (
+                        <span>Testing...</span>
+                      ) : (
+                        <>
+                            <span className="material-symbols-outlined">fact_check</span>
+                            Evaluate Compliance
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Guidelines Preview */}
+              <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="p-6 rounded-xl bg-primary/5 border border-primary/10">
+                  <span className="material-symbols-outlined text-primary mb-3">gavel</span>
+                  <h3 className="font-bold mb-1">Legal Accuracy</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Cross-referenced with the latest global regulatory updates.</p>
+                </div>
+                <div className="p-6 rounded-xl bg-primary/5 border border-primary/10">
+                  <span className="material-symbols-outlined text-primary mb-3">speed</span>
+                  <h3 className="font-bold mb-1">Real-time Check</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Instant feedback on banned or restricted substances.</p>
+                </div>
+                <div className="p-6 rounded-xl bg-primary/5 border border-primary/10">
+                  <span className="material-symbols-outlined text-primary mb-3">history</span>
+                  <h3 className="font-bold mb-1">Audit Trail</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Every evaluation is timestamped and stored for compliance.</p>
+                </div>
+              </div>
+            </div>
+          </main>
+          
+          <footer className="py-10 text-center text-slate-400 text-sm">
+            <p>© 2026 ComplianceIQ Solutions. All rights reserved.</p>
+          </footer>
         </div>
       </div>
-
-      <form onSubmit={handleSubmit} className="evaluate-form">
-        {/* Product info */}
-        <div className="card animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-          <h3 className="section-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-            </svg>
-            Product Information
-          </h3>
-
-          <div className="product-fields">
-            <div className="form-group" style={{ flex: 2 }}>
-              <label htmlFor="productName">Product Name</label>
-              <input
-                id="productName"
-                type="text"
-                className="form-input"
-                placeholder="e.g. Premium Bath Soap"
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group" style={{ flex: 1 }}>
-              <label htmlFor="category">Category</label>
-              <select
-                id="category"
-                className="form-input"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Ingredients */}
-        <div className="card animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-          <div className="section-header">
-            <h3 className="section-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 6h18M3 12h18M3 18h18" />
-              </svg>
-              Ingredients
-            </h3>
-            <button type="button" className="btn btn-outline btn-sm" onClick={addIngredient}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              Add Ingredient
-            </button>
-          </div>
-
-          <div className="ingredient-labels">
-            <div style={{ width: 28 }}></div>
-            <span className="il-name">Ingredient Name</span>
-            <span className="il-conc">Concentration</span>
-            <span className="il-unit">Unit</span>
-            {ingredients.length > 1 && <div style={{ width: 32 }}></div>}
-          </div>
-
-          <div className="ingredients-list">
-            {ingredients.map((ing, i) => (
-              <IngredientRow
-                key={i}
-                ingredient={ing}
-                index={i}
-                onChange={updateIngredient}
-                onRemove={removeIngredient}
-                canRemove={ingredients.length > 1}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Error */}
-        {error && (
-          <div className="error-banner animate-fade-in">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            {error}
-          </div>
-        )}
-
-        {/* Submit */}
-        <div className="submit-section animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-          <button type="submit" className="btn btn-primary btn-lg" disabled={loading}>
-            {loading ? (
-              <>
-                <span className="spinner"></span>
-                Evaluating...
-              </>
-            ) : (
-              <>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 12l2 2 4-4" />
-                  <path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z" />
-                </svg>
-                Evaluate Compliance
-              </>
-            )}
-          </button>
-        </div>
-      </form>
     </div>
   );
 }
