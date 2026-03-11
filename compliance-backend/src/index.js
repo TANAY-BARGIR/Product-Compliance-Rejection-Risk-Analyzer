@@ -9,7 +9,9 @@ app.use(cors());
 
 // Import Routes
 const apiRoutes = require('./routes/apiRoutes');
+const authRoutes = require('./routes/authRoutes');
 app.use('/api', apiRoutes);
+app.use('/api/auth', authRoutes);
 
 const PORT = process.env.PORT || 3000;
 
