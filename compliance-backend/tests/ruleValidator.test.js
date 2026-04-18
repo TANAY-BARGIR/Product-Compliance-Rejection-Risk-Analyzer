@@ -7,7 +7,7 @@ describe("Rule Validator", () => {
   test("soap.bis.json passes validation", () => {
     const result = validateRuleFile(path.join(RULES_DIR, "soap.bis.json"));
     expect(result.valid).toBe(true);
-    expect(result.ruleCount).toBe(12);
+    expect(result.ruleCount).toBe(15);
   });
 
   test("cookies.bis.json passes validation", () => {

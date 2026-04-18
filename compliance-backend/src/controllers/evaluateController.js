@@ -6,9 +6,10 @@ const db = require("../config/db");
 async function evaluateProduct(req, res) {
   try {
     const validatedData = submissionSchema.parse(req.body);
-    console.log(`\n📦 Processing Product: ${validatedData.productName}`);
+    const userId = req.body.userId || null;
+    console.log(`\n📦 Processing Product: ${validatedData.productName} (userId: ${userId})`);
 
-    const result = await CompliancePipeline.run(validatedData);
+    const result = await CompliancePipeline.run(validatedData, userId);
 
     res.json({
       status: "success",
@@ -23,9 +24,10 @@ async function evaluateProduct(req, res) {
 async function getProductReport(req, res) {
   try {
     const validatedData = submissionSchema.parse(req.body);
+    const userId = req.body.userId || null;
     console.log(`\n📄 Generating PDF for: ${validatedData.productName}`);
 
-    const result = await CompliancePipeline.run(validatedData);
+    const result = await CompliancePipeline.run(validatedData, userId);
 
     const reportData = {
       product: result.product,
@@ -49,14 +51,42 @@ async function getProductReport(req, res) {
 
 async function getEvaluationHistory(req, res) {
   try {
-    const result = await db.query(
-      `SELECT id, product_name, category, status, risk_score, risk_level,
-              total_violations, total_borderlines, missing_data_count,
-              pipeline_version, created_at
-       FROM evaluations
-       ORDER BY created_at DESC
-       LIMIT 50`
-    );
+    const userId = req.query.userId;
+
+    let result;
+    if (userId) {
+      // Try filtering by user_id (requires migration)
+      try {
+        result = await db.query(
+          `SELECT id, product_name, category, status, risk_score, risk_level,
+                  total_violations, total_borderlines, missing_data_count,
+                  pipeline_version, created_at
+           FROM evaluations
+           WHERE user_id = $1
+           ORDER BY created_at DESC
+           LIMIT 50`,
+          [userId]
+        );
+      } catch (dbErr) {
+        // If user_id column doesn't exist, fall back to unfiltered (pre-migration)
+        if (dbErr.message && dbErr.message.includes('user_id')) {
+          console.warn('⚠️  user_id column not found — run migrate_user_history.sql');
+          result = await db.query(
+            `SELECT id, product_name, category, status, risk_score, risk_level,
+                    total_violations, total_borderlines, missing_data_count,
+                    pipeline_version, created_at
+             FROM evaluations
+             ORDER BY created_at DESC
+             LIMIT 50`
+          );
+        } else {
+          throw dbErr;
+        }
+      }
+    } else {
+      result = { rows: [] };
+    }
+
     res.json({ status: "success", data: result.rows });
   } catch (error) {
     handleError(res, error);
@@ -66,15 +96,25 @@ async function getEvaluationHistory(req, res) {
 async function getEvaluationDetail(req, res) {
   try {
     const { id } = req.params;
+    const userId = req.query.userId;
 
-    // Fetch evaluation
-    const evalResult = await db.query(
-      `SELECT id, product_name, category, status, risk_score, risk_level,
-              total_violations, total_borderlines, missing_data_count,
-              pipeline_version, ai_explanation, created_at
-       FROM evaluations WHERE id = $1`,
-      [id]
-    );
+    // Fetch evaluation (with user ownership check when userId is provided)
+    let evalQuery, evalParams;
+    if (userId) {
+      evalQuery = `SELECT id, product_name, category, status, risk_score, risk_level,
+                          total_violations, total_borderlines, missing_data_count,
+                          pipeline_version, ai_explanation, created_at
+                   FROM evaluations WHERE id = $1 AND user_id = $2`;
+      evalParams = [id, userId];
+    } else {
+      evalQuery = `SELECT id, product_name, category, status, risk_score, risk_level,
+                          total_violations, total_borderlines, missing_data_count,
+                          pipeline_version, ai_explanation, created_at
+                   FROM evaluations WHERE id = $1`;
+      evalParams = [id];
+    }
+
+    const evalResult = await db.query(evalQuery, evalParams);
 
     if (evalResult.rows.length === 0) {
       return res.status(404).json({ status: "error", message: "Evaluation not found" });

@@ -201,6 +201,7 @@ CREATE TABLE ingredient_limits (
 
 CREATE TABLE evaluations (
   id                  SERIAL PRIMARY KEY,
+  user_id             INTEGER      REFERENCES users(id),
   product_name        VARCHAR(200) NOT NULL,
   category            VARCHAR(100) NOT NULL,
   status              VARCHAR(30)  NOT NULL
@@ -305,6 +306,7 @@ CREATE INDEX idx_interactions_b ON ingredient_interactions(substance_b_id);
 CREATE INDEX idx_evaluations_category  ON evaluations(category);
 CREATE INDEX idx_evaluations_status    ON evaluations(status);
 CREATE INDEX idx_evaluations_created   ON evaluations(created_at DESC);
+CREATE INDEX idx_evaluations_user      ON evaluations(user_id);
 
 -- Violations
 CREATE INDEX idx_violations_eval       ON violations(evaluation_id);

@@ -94,6 +94,36 @@
       "unit": "%",
       "severity": "WARNING",
       "description": "While glycerin helps with moisture, concentrations above 5% in hair oil can cause sticky buildup and dirt attraction."
+    },
+    {
+      "id": "HO010",
+      "name": "Base Oil Content (Minimum)",
+      "target_code": "PARAM-BASE-OIL",
+      "type": "MIN_LIMIT",
+      "limit": 85,
+      "unit": "%",
+      "severity": "CRITICAL",
+      "description": "Base oil (Coconut, Olive, Mineral, or blended vegetable oils) must constitute at least 85% of the total formulation for Type 1 and Type 3 hair oils (BIS IS 7123:2019)."
+    },
+    {
+      "id": "HO011",
+      "name": "Herbal Extracts Limit",
+      "target_code": "PARAM-HERBAL-EXTRACT",
+      "type": "MAX_LIMIT",
+      "limit": 2.0,
+      "unit": "%",
+      "severity": "CRITICAL",
+      "description": "Herbal/botanical extracts should not exceed 2% of total formulation — excessive concentrations risk allergic reactions and formulation instability."
+    },
+    {
+      "id": "HO012",
+      "name": "Almond Oil Limit",
+      "target_code": "CAS-8007-69-0",
+      "type": "MAX_LIMIT",
+      "limit": 10,
+      "unit": "%",
+      "severity": "WARNING",
+      "description": "Secondary emollient oils like almond oil should not exceed 10% of the total hair oil formulation."
     }
   ]
 }

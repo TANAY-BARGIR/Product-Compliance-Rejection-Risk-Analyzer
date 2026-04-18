@@ -244,27 +244,57 @@ async function runExplanation(context) {
 
 async function runPersistence(context) {
   try {
-    // 1. Insert evaluation
-    const evalResult = await db.query(
-      `INSERT INTO evaluations
-        (product_name, category, status, risk_score, risk_level,
-         total_violations, total_borderlines, missing_data_count,
-         pipeline_version, ai_explanation)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-       RETURNING id`,
-      [
-        context.productName,
-        context.category,
-        context.status,
-        context.risk_score,
-        context.risk_level,
-        context.total_violations,
-        context.total_borderlines,
-        context.missing_data_count,
-        PIPELINE_VERSION,
-        context.ai_explanation,
-      ]
-    );
+    // 1. Insert evaluation (with user_id fallback for pre-migration DBs)
+    let evalResult;
+    try {
+      evalResult = await db.query(
+        `INSERT INTO evaluations
+          (user_id, product_name, category, status, risk_score, risk_level,
+           total_violations, total_borderlines, missing_data_count,
+           pipeline_version, ai_explanation)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+         RETURNING id`,
+        [
+          context.userId,
+          context.productName,
+          context.category,
+          context.status,
+          context.risk_score,
+          context.risk_level,
+          context.total_violations,
+          context.total_borderlines,
+          context.missing_data_count,
+          PIPELINE_VERSION,
+          context.ai_explanation,
+        ]
+      );
+    } catch (insertErr) {
+      if (insertErr.message && insertErr.message.includes('user_id')) {
+        console.warn('⚠️  user_id column not found — falling back without it');
+        evalResult = await db.query(
+          `INSERT INTO evaluations
+            (product_name, category, status, risk_score, risk_level,
+             total_violations, total_borderlines, missing_data_count,
+             pipeline_version, ai_explanation)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+           RETURNING id`,
+          [
+            context.productName,
+            context.category,
+            context.status,
+            context.risk_score,
+            context.risk_level,
+            context.total_violations,
+            context.total_borderlines,
+            context.missing_data_count,
+            PIPELINE_VERSION,
+            context.ai_explanation,
+          ]
+        );
+      } else {
+        throw insertErr;
+      }
+    }
 
     const evalId = evalResult.rows[0].id;
     context.evaluation_id = evalId;
@@ -314,9 +344,10 @@ async function runPersistence(context) {
 
 // ── Public API ───────────────────────────────────────────────
 
-async function run(validatedInput) {
+async function run(validatedInput, userId = null) {
   const context = {
     validatedInput,
+    userId,
     stages: [],
   };
 

@@ -94,6 +94,36 @@
       "unit": "%",
       "severity": "INFO",
       "description": "Hypoallergenic and cosmetic powders should keep fragrance levels below 0.5% to avoid dermal irritation."
+    },
+    {
+      "id": "TALC010",
+      "name": "Cosmetic Talc Content (Minimum)",
+      "target_code": "CAS-14807-96-6",
+      "type": "MIN_LIMIT",
+      "limit": 95,
+      "unit": "%",
+      "severity": "CRITICAL",
+      "description": "Cosmetic-grade hydrated magnesium silicate (talc) must constitute at least 95% of the powder formulation for purity compliance."
+    },
+    {
+      "id": "TALC011",
+      "name": "Zinc Oxide Absorbent Limit",
+      "target_code": "CAS-1314-13-2",
+      "type": "MAX_LIMIT",
+      "limit": 5.0,
+      "unit": "%",
+      "severity": "WARNING",
+      "description": "Zinc oxide used as an absorbent should not exceed 5% in cosmetic talc formulations."
+    },
+    {
+      "id": "TALC012",
+      "name": "Magnesium Carbonate Limit",
+      "target_code": "CAS-546-93-0",
+      "type": "MAX_LIMIT",
+      "limit": 5.0,
+      "unit": "%",
+      "severity": "WARNING",
+      "description": "Magnesium carbonate as an absorbent filler should not exceed 5% in cosmetic talcum powder."
     }
   ]
 }
