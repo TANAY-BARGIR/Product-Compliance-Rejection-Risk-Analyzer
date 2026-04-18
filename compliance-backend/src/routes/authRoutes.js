@@ -71,4 +71,35 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// POST /api/auth/reset-password
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    if (!email || !newPassword) {
+      return res.status(400).json({ status: "error", message: "Email and new password are required" });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ status: "error", message: "Password must be at least 6 characters" });
+    }
+
+    const emailLower = email.toLowerCase().trim();
+    const existing = await db.query("SELECT id FROM users WHERE email = $1", [emailLower]);
+    
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ status: "error", message: "User with this email not found" });
+    }
+
+    const passwordHash = hashPassword(newPassword);
+    await db.query("UPDATE users SET password_hash = $1 WHERE email = $2", [passwordHash, emailLower]);
+
+    res.json({
+      status: "success",
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res.status(500).json({ status: "error", message: "Internal server error" });
+  }
+});
+
 module.exports = router;

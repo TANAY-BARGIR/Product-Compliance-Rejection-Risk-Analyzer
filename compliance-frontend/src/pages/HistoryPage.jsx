@@ -10,7 +10,7 @@ function HistoryPage({ user, onLogout }) {
   useEffect(() => {
     async function loadHistory() {
       try {
-        const res = await getHistory();
+        const res = await getHistory(user.id);
         // Backend returns { status: "success", data: [...] }
         setHistory(res.data || []);
       } catch (err) {
@@ -20,7 +20,7 @@ function HistoryPage({ user, onLogout }) {
       }
     }
     loadHistory();
-  }, []);
+  }, [user.id]);
 
   const getStatusBadge = (record) => {
     const st = record.status;

@@ -5,7 +5,7 @@ import { evaluateProduct } from '../api';
 const EMPTY_INGREDIENT = { name: '', concentration: "", unit: '%' };
 
 const CATEGORIES = [
-  { value: 'soap', label: 'Toilet Soap (BIS IS 2888:2004)' },
+  { value: 'soap', label: 'Body Soap (BIS IS 2888:2004)' },
   { value: 'cookies', label: 'Cookies & Biscuits (FSSAI 2.11.10)' },
   { value: 'talcum', label: 'Talcum Powder (BIS IS 1462:2019)' },
   { value: 'hairoil', label: 'Hair Oil (BIS IS 7123:2019)' },
@@ -55,6 +55,7 @@ function EvaluatePage({ user, onLogout, onResult }) {
       productName: productName.trim(),
       category,
       manufacturer: manufacturer.trim() || undefined,
+      userId: user.id,
       ingredients: validIngredients.map((i) => ({
         name: i.name.trim(),
         concentration: Number(i.concentration),
@@ -199,25 +200,44 @@ function EvaluatePage({ user, onLogout, onResult }) {
                 </div>
 
                 {/* Footer Actions */}
-                <div className="mt-12 flex flex-col md:flex-row items-center justify-between gap-6 pt-8 border-t border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-3 text-slate-500">
+                <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-3 text-slate-500 mb-6">
                     <span className="material-symbols-outlined text-primary">info</span>
                     <p className="text-sm">Evaluating against BIS and FSSAI rules</p>
                   </div>
-                  <div className="flex gap-4 w-full md:w-auto">
-                    <button type="button" className="flex-1 md:flex-none px-8 py-4 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent">
-                      Save Draft
-                    </button>
-                    <button type="button" onClick={handleSubmit} disabled={loading} className="flex-1 md:flex-none px-10 py-4 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2 glow-primary hover:brightness-110 active:scale-[0.98] transition-all">
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Evaluate Compliance — full pipeline with AI + DB */}
+                    <button type="button" onClick={handleSubmit} disabled={loading} className="flex items-center justify-center gap-3 px-8 py-5 bg-primary text-white rounded-xl font-bold text-lg glow-primary hover:brightness-110 active:scale-[0.98] transition-all">
                       {loading ? (
                         <span>Testing...</span>
                       ) : (
                         <>
-                            <span className="material-symbols-outlined">fact_check</span>
-                            Evaluate Compliance
+                          <span className="material-symbols-outlined">fact_check</span>
+                          Evaluate Compliance
                         </>
                       )}
                     </button>
+
+                    {/* Simulation Mode — lightweight iterative pipeline */}
+                    <Link
+                      to="/simulation"
+                      state={{
+                        productName: productName || '',
+                        category: category || 'soap',
+                        ingredients: ingredients.filter(i => i.name.trim()),
+                      }}
+                      className="flex items-center justify-center gap-3 px-8 py-5 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-violet-600/25"
+                    >
+                      <span className="material-symbols-outlined">science</span>
+                      Simulation Mode
+                    </Link>
+                  </div>
+
+                  {/* Helper text under buttons */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                    <p className="text-xs text-slate-400 text-center">Full compliance report with AI insights</p>
+                    <p className="text-xs text-slate-400 text-center">Iterate & optimize formulations interactively</p>
                   </div>
                 </div>
               </div>

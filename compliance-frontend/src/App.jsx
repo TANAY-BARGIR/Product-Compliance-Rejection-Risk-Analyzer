@@ -6,6 +6,9 @@ import ResultsPage from './pages/ResultsPage';
 import HistoryPage from './pages/HistoryPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ShelfLifePage from './pages/ShelfLifePage';
+import SimulationLabPage from './pages/SimulationLabPage';
 
 function App() {
   const [lastResult, setLastResult] = useState(null);
@@ -30,7 +33,8 @@ function App() {
     <Routes>
       <Route path="/" element={<LandingPage user={user} onLogout={handleLogout} />} />
       <Route path="/login" element={user ? <Navigate to="/evaluate" replace /> : <LoginPage onLogin={handleLogin} />} />
-      <Route path="/signup" element={user ? <Navigate to="/evaluate" replace /> : <SignupPage onLogin={handleLogin} />} />
+      <Route path="/signup" element={user ? <Navigate to="/evaluate" replace /> : <SignupPage />} />
+      <Route path="/forgot-password" element={user ? <Navigate to="/evaluate" replace /> : <ForgotPasswordPage />} />
       
       <Route path="/evaluate" element={
         user ? (
@@ -59,6 +63,24 @@ function App() {
       <Route path="/history" element={
         user ? (
           <HistoryPage 
+            user={user} 
+            onLogout={handleLogout}
+          />
+        ) : <Navigate to="/login" replace />
+      } />
+      
+      <Route path="/shelf-life" element={
+        user ? (
+          <ShelfLifePage 
+            user={user} 
+            onLogout={handleLogout}
+          />
+        ) : <Navigate to="/login" replace />
+      } />
+      
+      <Route path="/simulation" element={
+        user ? (
+          <SimulationLabPage 
             user={user} 
             onLogout={handleLogout}
           />

@@ -319,6 +319,47 @@ function ResultsPage({ user, onLogout, result, request }) {
             </div>
           )}
 
+          {/* Shelf Life Prediction CTA — only for low-risk compliant/borderline products */}
+          {status !== 'NON-COMPLIANT' && riskScore <= 20 && (
+            <div className="relative bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 rounded-xl p-8 border border-emerald-500/20 shadow-sm overflow-hidden">
+              <div className="absolute -right-8 -top-8 opacity-5">
+                <span className="material-symbols-outlined" style={{ fontSize: '160px' }}>science</span>
+              </div>
+              <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div className="flex items-start gap-4">
+                  <div className="size-14 bg-emerald-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <span className="material-symbols-outlined text-emerald-600 text-3xl">labs</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-extrabold text-slate-800 dark:text-slate-100 mb-1">
+                      Product Eligible for Shelf Life Prediction
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-lg">
+                      Your product passed compliance with low risk — estimate how long it will survive under different 
+                      storage conditions using our multi-mode degradation simulation engine.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  to="/shelf-life"
+                  state={{
+                    productName: apiData.product || request.productName,
+                    category: apiData.category || request.category,
+                    ingredients: request.ingredients,
+                    evaluationId: apiData.evaluation_id || null,
+                  }}
+                  className="flex-shrink-0"
+                >
+                  <button className="flex items-center gap-3 px-8 py-4 bg-emerald-600 text-white rounded-xl font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-emerald-600/30 text-base">
+                    <span className="material-symbols-outlined">science</span>
+                    Predict Shelf Life
+                    <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                  </button>
+                </Link>
+              </div>
+            </div>
+          )}
+
           <footer className="bg-primary/5 border border-primary/20 p-6 rounded-xl flex flex-col sm:flex-row items-center justify-between mt-8 gap-4">
             <div className="flex items-center gap-6 flex-wrap">
               <div className="flex flex-col">

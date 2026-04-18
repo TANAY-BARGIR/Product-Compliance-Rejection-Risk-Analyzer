@@ -24,6 +24,17 @@ export async function login(data) {
   return json;
 }
 
+export async function resetPassword(data) {
+  const res = await fetch(`${API_BASE}/auth/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || 'Password reset failed');
+  return json;
+}
+
 // ── Evaluation ───────────────────────────────────────────────
 
 export async function evaluateProduct(data) {
@@ -63,14 +74,50 @@ export async function downloadReport(data) {
   URL.revokeObjectURL(url);
 }
 
-export async function getHistory() {
-  const res = await fetch(`${API_BASE}/history`);
+export async function getHistory(userId) {
+  const res = await fetch(`${API_BASE}/history?userId=${userId}`);
   if (!res.ok) throw new Error('Failed to fetch history');
   return res.json();
 }
 
-export async function getEvaluationDetail(id) {
-  const res = await fetch(`${API_BASE}/evaluations/${id}`);
+export async function getEvaluationDetail(id, userId) {
+  const params = userId ? `?userId=${userId}` : '';
+  const res = await fetch(`${API_BASE}/evaluations/${id}${params}`);
   if (!res.ok) throw new Error('Failed to fetch evaluation detail');
   return res.json();
 }
+
+// ── Shelf Life Prediction ────────────────────────────────────
+
+export async function predictShelfLife(data) {
+  const res = await fetch(`${API_BASE}/shelf-life`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Network error' }));
+    throw new Error(err.message || `Server error: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+// ── Simulation Mode ──────────────────────────────────────────
+
+export async function runSimulation(data) {
+  const res = await fetch(`${API_BASE}/simulate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Network error' }));
+    throw new Error(err.message || `Server error: ${res.status}`);
+  }
+
+  return res.json();
+}
+
