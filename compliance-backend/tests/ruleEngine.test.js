@@ -17,7 +17,7 @@ describe("Rule Engine", () => {
     test("loads soap rules successfully", () => {
       const rules = loadRules("soap");
       expect(rules.category).toBe("Soap");
-      expect(rules.rules.length).toBe(12);
+      expect(rules.rules.length).toBe(15);
     });
 
     test("loads cookies rules successfully", () => {
@@ -236,7 +236,7 @@ describe("Rule Engine", () => {
         { substance_id: "PARAM-TFM", value_percent: 80 },
       ];
       const result = evaluateCompliance(ingredients, [], "soap");
-      expect(result.rule_outcomes.length).toBe(12); // 12 soap rules (incl. SP011 Fragrance + SP012 Colorant)
+      expect(result.rule_outcomes.length).toBe(15); // 15 soap rules (incl. SP013-SP015 + groups)
       result.rule_outcomes.forEach((o) => {
         expect(o).toHaveProperty("test_module");
         expect(o).toHaveProperty("outcome");

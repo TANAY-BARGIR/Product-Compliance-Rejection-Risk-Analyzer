@@ -4,7 +4,8 @@ const { normalizeToPercent } = require("../utils/unitConverter");
 
 const RULES_DIR = path.join(__dirname, "../../rules");
 
-const BORDERLINE_THRESHOLD = 0.10; // 10% of limit
+const BORDERLINE_THRESHOLD = 0.10; // 10% of limit (for small limits)
+const BORDERLINE_MAX_ABS = 5;       // cap: at most 5 percentage-point borderline zone
 
 // ── Risk Point Weights ───────────────────────────────────────
 const RISK_POINTS = {
@@ -46,11 +47,15 @@ function calcDeviation(actual, limit) {
 }
 
 // ── Borderline Check ─────────────────────────────────────────
+// Uses adaptive threshold: min(10% of limit, 5 absolute points).
+// This prevents absurd borderline zones for high-value limits
+// (e.g., MIN_LIMIT 85% → zone would be 85-93.5% with flat 10%,
+//  but capped to 85-90% with the 5-point absolute cap).
 
 function checkBorderline(actualValue, limitValue, ruleType) {
   if (ruleType === "BANNED") return false;
   const diff = Math.abs(actualValue - limitValue);
-  const threshold = limitValue * BORDERLINE_THRESHOLD;
+  const threshold = Math.min(limitValue * BORDERLINE_THRESHOLD, BORDERLINE_MAX_ABS);
   if (ruleType === "MIN_LIMIT") {
     return actualValue >= limitValue && diff <= threshold;
   }
