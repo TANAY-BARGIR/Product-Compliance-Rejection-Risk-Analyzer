@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { runSimulation } from '../api';
 
 const EMPTY_INGREDIENT = { name: '', concentration: '', unit: '%' };
@@ -14,6 +14,7 @@ const CATEGORIES = [
 
 function SimulationLabPage({ user, onLogout }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const prefill = location.state || {};
   const resultsRef = useRef(null);
 
@@ -136,6 +137,23 @@ function SimulationLabPage({ user, onLogout }) {
     if (status === 'COMPLIANT') return { bg: 'bg-emerald-100 dark:bg-emerald-500/15', text: 'text-emerald-700 dark:text-emerald-400', icon: 'verified' };
     if (status === 'BORDERLINE') return { bg: 'bg-amber-100 dark:bg-amber-500/15', text: 'text-amber-700 dark:text-amber-400', icon: 'warning' };
     return { bg: 'bg-red-100 dark:bg-red-500/15', text: 'text-red-700 dark:text-red-400', icon: 'cancel' };
+  };
+
+  // ── Navigate to full evaluation with current formulation pre-filled ──
+  const handleFinalEvaluation = () => {
+    const validIngredients = ingredients.filter(i => i.name.trim() && Number(i.concentration) > 0);
+    navigate('/evaluate', {
+      state: {
+        fromSimulation: true,
+        productName: productName || 'Untitled Product',
+        category,
+        ingredients: validIngredients.map(i => ({
+          name: i.name,
+          concentration: Number(i.concentration),
+          unit: i.unit,
+        })),
+      },
+    });
   };
 
   return (
@@ -513,6 +531,30 @@ function SimulationLabPage({ user, onLogout }) {
                           ))}
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {/* Final Evaluation CTA — shown when formulation is compliant */}
+                  {latestResult.compliance.status === 'COMPLIANT' && (
+                    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-500/10 dark:to-teal-500/10 rounded-xl p-6 border border-emerald-200 dark:border-emerald-500/20 shadow-sm">
+                      <div className="flex flex-col items-center text-center gap-3">
+                        <div className="size-14 bg-emerald-100 dark:bg-emerald-500/20 rounded-2xl flex items-center justify-center">
+                          <span className="material-symbols-outlined text-emerald-600 dark:text-emerald-400 text-3xl">verified</span>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-emerald-800 dark:text-emerald-300 text-base">Formulation Ready!</h4>
+                          <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70 mt-1 max-w-xs leading-relaxed">
+                            Your combination passes all compliance checks. Run the full evaluation to get an AI-generated report, compliance certificate, and persist it to your history.
+                          </p>
+                        </div>
+                        <button
+                          onClick={handleFinalEvaluation}
+                          className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-emerald-600/30 text-sm mt-1"
+                        >
+                          <span className="material-symbols-outlined">fact_check</span>
+                          Go for Final Evaluation
+                        </button>
+                      </div>
                     </div>
                   )}
 

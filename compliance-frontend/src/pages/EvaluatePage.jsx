@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { evaluateProduct } from '../api';
 
 const EMPTY_INGREDIENT = { name: '', concentration: "", unit: '%' };
@@ -15,10 +15,22 @@ const CATEGORIES = [
 
 function EvaluatePage({ user, onLogout, onResult }) {
   const navigate = useNavigate();
-  const [productName, setProductName] = useState('');
+  const location = useLocation();
+  const prefill = location.state || {};
+
+  const [productName, setProductName] = useState(prefill.productName || '');
   const [manufacturer, setManufacturer] = useState('');
-  const [category, setCategory] = useState('soap');
-  const [ingredients, setIngredients] = useState([{ ...EMPTY_INGREDIENT }]);
+  const [category, setCategory] = useState(prefill.category || 'soap');
+  const [ingredients, setIngredients] = useState(() => {
+    if (prefill.ingredients && prefill.ingredients.length > 0) {
+      return prefill.ingredients.map(i => ({
+        name: i.name || '',
+        concentration: i.concentration ?? '',
+        unit: i.unit || '%',
+      }));
+    }
+    return [{ ...EMPTY_INGREDIENT }];
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -112,6 +124,18 @@ function EvaluatePage({ user, onLogout, onResult }) {
                   <p className="text-primary font-medium text-lg">Check safety compliance for your formulations</p>
                 </div>
               </div>
+
+              {/* Simulation Lab handoff banner */}
+              {prefill.fromSimulation && (
+                <div className="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl mb-4">
+                  <span className="material-symbols-outlined text-emerald-600 dark:text-emerald-400">science</span>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Formulation imported from Simulation Lab</p>
+                    <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70">Your compliant combination has been pre-filled. Review and hit Evaluate for the full AI-backed report.</p>
+                  </div>
+                  <span className="material-symbols-outlined text-emerald-400 text-lg">check_circle</span>
+                </div>
+              )}
 
               {error && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
