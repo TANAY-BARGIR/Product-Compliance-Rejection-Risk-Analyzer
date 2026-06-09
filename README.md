@@ -1,44 +1,60 @@
 # Product Compliance & Rejection Risk Analyzer
 
-A pre-certification decision-support system that evaluates product formulations against regulatory standards, identifies compliance violations, and generates AI-powered risk assessments with professional PDF reports.
+A comprehensive pre-certification decision-support platform that evaluates product formulations against strict regulatory standards, identifies compliance violations, and generates AI-powered risk assessments with professional PDF reports. 
+
+The system now includes a **Virtual Reformulation Simulator**, a **Shelf-Life Prediction Engine**, and **User Evaluation History**, providing an all-in-one suite for R&D chemists and regulatory compliance officers.
 
 ---
 
 ## 🎯 Problem Statement
 
-Manufacturers face costly product rejections during BIS (Bureau of Indian Standards) certification due to non-compliant formulations. Current compliance checks are manual, error-prone, and lack structured risk assessment — leading to delayed time-to-market and financial losses.
+Manufacturers face costly product rejections during BIS (Bureau of Indian Standards) and FSSAI certification due to non-compliant formulations. Current compliance checks are manual, error-prone, and lack structured risk assessment — leading to delayed time-to-market and financial losses.
 
 ## 💡 Solution
 
-An automated compliance engine that:
-- Validates product ingredient data against regulation-grade rules
+An automated compliance engine and virtual lab that:
+- Validates product ingredient data against regulation-grade rules (BIS, FSSAI)
 - Detects violations (banned substances, exceeded limits, missing data)
 - Computes rejection risk scores with severity-weighted aggregation
 - Generates human-readable AI explanations and actionable recommendations
+- Offers a **Virtual Reformulation Simulator** to test "what-if" scenarios and get dynamic optimization suggestions
+- Includes a **Shelf-Life Prediction Module** to estimate degradation based on environmental factors
 - Produces professional PDF compliance certificates
+- Maintains User History for tracking past evaluations
+
+---
+
+## 📸 Screenshots
+
+| Feature | Screenshot |
+|---------|------------|
+| **Product Compliance Dashboard** | <img src="assets/Landing.png" width="400" alt="Landing Page"> |
+| **New Evaluation Input** | <img src="assets/Input.png" width="400" alt="Evaluation Input">  |
+| **Compliance Results & Risk** | <img src="assets/Result.png" width="400" alt="Result Overview"> |
+| **Shelf Life Calculation** | <img src="assets/Input2.png" width="400" alt="Evaluation Input 2"> |
+| **Shelf Life Results** | <img src="assets/Result2.png" width="400" alt="Result Details"> |
+| **Shelf Life Analysis** | <img src="assets/Analysis.png" width="400" alt="Delta Analysis"> |
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-Frontend (React)
+Frontend (React + Tailwind CSS)
    ↓
-API Layer (Express)
+API Layer (Express + JWT Auth)
    ↓
-Validation & Normalization Layer
+Validation & Normalization Layer (Zod + Aliases)
    ↓
-Generic Rule Engine (JS)
+Generic Rule Engine (JS) & Test Modules
    ↓
-Category Rule Loader (JSON)
+Category Rule Loader (JSON: Soap, Hair Oil, Talcum, Cookies, etc.)
    ↓
-Risk Aggregation Engine
+Delta Engine & Shelf-Life Engine
    ↓
-AI Explanation Engine (Gemini)
+Risk Aggregation & AI Explanation Engine (Gemini)
    ↓
-Report Generator (PDF)
-   ↓
-PostgreSQL
+PostgreSQL (Users, History, Shelf-Life Profiles, Substances)
 ```
 
 **Core Principle:** Logic is generic. Categories are data.
@@ -50,11 +66,11 @@ PostgreSQL
 | Layer | Technology |
 |---|---|
 | Backend | Node.js + Express |
-| Frontend | React + HTML + CSS |
+| Frontend | React + Tailwind CSS + Vite |
 | Database | PostgreSQL |
-| Rule Engine | Custom JS engine |
+| Rule Engine | Custom JS engine + Extensible Test Modules |
 | Rules | JSON-based, data-driven |
-| AI | Google Gemini (explanations & suggestions only) |
+| AI | Google Gemini (explanations & contextual suggestions) |
 | Validation | Zod |
 | Reports | PDFKit |
 
@@ -64,27 +80,24 @@ PostgreSQL
 
 ```
 compliance/
+├── assets/                        # Project images and screenshots
 ├── compliance-backend/
-│   ├── rules/
-│   │   └── soap.bis.json          # BIS regulation rules for soap
+│   ├── database/                  # SQL migrations & seed data (schema, shelf-life, history)
+│   ├── rules/                     # BIS/FSSAI regulation rules (JSON)
 │   ├── src/
-│   │   ├── config/
-│   │   │   └── db.js              # PostgreSQL connection pool
-│   │   ├── controllers/
-│   │   │   └── evaluateController.js  # Main evaluation pipeline
-│   │   ├── routes/
-│   │   │   └── apiRoutes.js       # API route definitions
-│   │   ├── services/
-│   │   │   ├── aiService.js       # Gemini AI explanation layer
-│   │   │   ├── normalizationService.js  # Ingredient name resolution
-│   │   │   ├── reportService.js   # PDF report generation
-│   │   │   └── ruleEngine.js      # Generic rule engine + risk aggregation
-│   │   ├── utils/
-│   │   │   ├── unitConverter.js   # ppm/mg·kg ↔ % normalization
-│   │   │   └── validationSchema.js    # Zod input validation
-│   │   └── index.js               # Express server entry point
-│   ├── package.json
-│   └── .gitignore
+│   │   ├── controllers/           # API handlers (evaluate, auth, simulation, shelf-life)
+│   │   ├── routes/                # Express routing
+│   │   ├── services/              # Core business logic (ruleEngine, deltaEngine, aiService, etc.)
+│   │   └── utils/                 # Helpers (converters, validators)
+│   ├── tests/                     # Comprehensive Jest test suite
+│   └── package.json
+├── compliance-frontend/
+│   ├── src/
+│   │   ├── pages/                 # React Pages (Evaluate, SimulationLab, ShelfLife, History, Auth)
+│   │   ├── api.js                 # Backend communication
+│   │   └── App.jsx                # Router config
+│   ├── tailwind.config.js         # Tailwind styling tokens
+│   └── package.json
 └── README.md
 ```
 
@@ -93,7 +106,7 @@ compliance/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v18+)
+- Node.js (v20+)
 - PostgreSQL (v14+)
 - Google Gemini API Key
 
@@ -105,64 +118,54 @@ compliance/
    cd compliance
    ```
 
-2. **Install dependencies**
+2. **Setup Database**
+   - Create a PostgreSQL database named `compliance_db`
+   - Run the SQL files in `compliance-backend/database/` to seed schema, substances, history tracking, and shelf-life profiles.
+
+3. **Backend Setup**
    ```bash
    cd compliance-backend
    npm install
+   cp .env.example .env  # Add DB credentials, JWT_SECRET, and GEMINI_API_KEY
+   npm run dev
    ```
 
-3. **Configure environment**
+4. **Frontend Setup**
    ```bash
-   cp .env.example .env
-   # Edit .env with your database credentials and Gemini API key
+   cd ../compliance-frontend
+   npm install
+   npm run dev
    ```
 
-4. **Setup database**
-   - Create a PostgreSQL database named `compliance_db`
-   - Run the seed SQL to populate substances and aliases
-
-5. **Start the server**
+5. **Run Tests (Optional)**
    ```bash
-   node src/index.js
+   cd compliance-backend
+   npm test
    ```
 
 ---
 
-## 📡 API Endpoints
+## 📡 API Endpoints Overview
 
-### `POST /api/evaluate`
-Evaluates a product's ingredient list against compliance rules.
-
-**Request Body:**
-```json
-{
-  "productName": "Premium Bath Soap",
-  "category": "soap",
-  "ingredients": [
-    { "name": "TFM", "concentration": 78, "unit": "%" },
-    { "name": "Sodium Hydroxide", "concentration": 0.03, "unit": "%" },
-    { "name": "Triclosan", "concentration": 0.2, "unit": "%" }
-  ]
-}
-```
-
-**Response:** JSON compliance report with risk score, violations, and AI explanation.
-
-### `POST /api/report`
-Generates a downloadable PDF compliance certificate (same request body as above).
-
-**Response:** PDF file stream.
+- `POST /api/auth/signup` & `POST /api/auth/login` - User authentication
+- `GET /api/history` - Fetch user's evaluation history
+- `POST /api/evaluate` - Core compliance evaluation against rules
+- `POST /api/report` - PDF certificate generation
+- `POST /api/simulate` - Run reformulation scenarios and delta analysis
+- `POST /api/shelflife` - Calculate microbial and chemical shelf-life impacts
 
 ---
 
-## 🔒 Domain Scope (Current)
+## 🔒 Domain Scope (Current Categories)
 
-| Parameter | Value |
+| Category | Standard Mapped |
 |---|---|
-| Product Category | Soap (Toilet Soap) |
-| Regulation | BIS IS 2888:2004 |
-| Rule Types | MIN_LIMIT, MAX_LIMIT, BANNED, GROUP_MAX |
-| Evaluation Outcomes | COMPLIANT, NON-COMPLIANT, NOT_EVALUATED |
+| Body Soap | BIS IS 2888:2004 |
+| Hair Oil | BIS IS 7123:2019 |
+| Talcum Powder | BIS IS 1462:2019 |
+| Body Spray / Deodorant | BIS IS 8482:2007 |
+| Moisturizing Cream/Lotion| BIS IS 6608:2004 |
+| Cookies & Biscuits | FSSAI 2.11.10 |
 
 ---
 
