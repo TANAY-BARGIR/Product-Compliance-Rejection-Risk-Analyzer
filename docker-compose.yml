@@ -1,0 +1,61 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: compliance
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./compliance-backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d compliance"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - compliance
+    
+  backend:
+    build: 
+      context: ./compliance-backend
+      dockerfile: Dockerfile
+    container_name: compliance-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./compliance-backend/.env
+    environment: 
+      DB_NAME: compliance
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - compliance
+  
+  frontend:
+    build:
+      context: ./compliance-frontend
+      dockerfile: Dockerfile
+    container_name: compliance-frontend
+    restart: unless-stopped
+    ports:
+      - "5174:5173"
+    depends_on:
+      - backend
+    networks: 
+      - compliance
+
+volumes:
+  postgres_data:
+
+networks:
+  compliance:

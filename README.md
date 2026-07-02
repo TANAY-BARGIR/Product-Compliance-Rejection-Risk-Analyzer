@@ -106,11 +106,14 @@ compliance/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v20+)
-- PostgreSQL (v14+)
+- Docker and Docker Compose (Recommended)
+- Node.js (v20+) (For manual setup)
+- PostgreSQL (v14+) (For manual setup)
 - Google Gemini API Key
 
-### Setup
+### Setup (Using Docker - Recommended)
+
+The easiest way to run the entire application stack is using Docker Compose.
 
 1. **Clone the repository**
    ```bash
@@ -118,11 +121,31 @@ compliance/
    cd compliance
    ```
 
-2. **Setup Database**
+2. **Configure Environment Variables**
+   Ensure your `compliance-backend/.env` file contains your Gemini API key (the rest will be overridden automatically by Docker):
+   ```env
+   GEMINI_API_KEY=your_api_key_here
+   ```
+
+3. **Run the Application**
+   ```bash
+   docker compose up --build
+   ```
+   *Note: On the first run, the PostgreSQL container will automatically seed the database schema and substance rules.*
+
+4. **Access the App**
+   - Frontend: `http://localhost:5174`
+   - Backend API: `http://localhost:3000`
+
+---
+
+### Manual Setup (Without Docker)
+
+1. **Setup Database**
    - Create a PostgreSQL database named `compliance_db`
    - Run the SQL files in `compliance-backend/database/` to seed schema, substances, history tracking, and shelf-life profiles.
 
-3. **Backend Setup**
+2. **Backend Setup**
    ```bash
    cd compliance-backend
    npm install
@@ -130,14 +153,14 @@ compliance/
    npm run dev
    ```
 
-4. **Frontend Setup**
+3. **Frontend Setup**
    ```bash
    cd ../compliance-frontend
    npm install
    npm run dev
    ```
 
-5. **Run Tests (Optional)**
+4. **Run Tests (Optional)**
    ```bash
    cd compliance-backend
    npm test
